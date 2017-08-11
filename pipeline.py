@@ -13,7 +13,7 @@ CHESSBOARD_HEIGHT = 6
 CHESSBOARD_WIDTH = 9
 CHESSBOARD_SIZE = (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT)
 
-DEBUG = True
+DEBUG = False
 
 def _get_cameral_image_paths():
 	""" get all image paths	"""	
@@ -436,6 +436,8 @@ def process_image(img):
 	_show_img(warped_img, 'gray')
 
 	ploty = np.linspace(0, warped_img.shape[0]-1, warped_img.shape[0])
+	# if previous frame is detected successfully, derive this frame
+	# otherwise, reset and recalculate
 	if left_line.detected and right_line.detected:
 		left_fit, right_fit = _find_lanes_derive(warped_img, left_line.best_fit, right_line.best_fit, ploty)
 		print("Derive")
@@ -446,9 +448,11 @@ def process_image(img):
 	print(left_curvature)
 	print(right_curvature)
 	print(distance_from_center)
+	# if sanity check passed, update left and right lines
 	if Line.sanity_check(left_fit, right_fit, ploty, left_curvature, right_curvature):
 		left_line.update(detected=True, fit=left_fit, curvature=left_curvature)
 		right_line.update(detected=True, fit=right_fit, curvature=right_curvature)
+	# otherwise use the average polyfit
 	else:
 		left_fit = left_line.best_fit
 		right_fit = right_line.best_fit

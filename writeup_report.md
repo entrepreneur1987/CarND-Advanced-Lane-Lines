@@ -64,6 +64,8 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![Undistort Straight Line][image5]
 
+I saved the mst and dist calculated from the camera calibration process into a pickle file (calibration.p). Then I load them from the pickle file, and using `cv2.undistort()` method.
+
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
 I used a combination of color and gradient thresholds to generate a binary image. The code for this step is contained in lines 117 through 153 of the file called `pipeline.py`. .  Here's an example of my output for this step. 
@@ -91,7 +93,7 @@ Then I did some other stuff and fit my lane lines with a 2nd order polynomial ki
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines 331 through 345 in my code in `my_other_file.py`
+I did this in lines 331 through 350 in my code in `my_other_file.py`
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
@@ -113,4 +115,4 @@ Here's a [link to my video result](./project_video_output.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Sometimes the lanes detected don't make sense. When sanity check fails, the pipeline will ignore current frame and use lanes detected from last successful frame.
