@@ -330,18 +330,18 @@ def _find_lanes_derive(warped_img, left_fit, right_fit, ploty):
 
 def _measure_curvature(left_fit, right_fit, ploty, car_pos):
 	# meters per pixel
-    ym_per_pix = 30/720
-    xm_per_pix = 3.7/700
+    ym_per_pix = 3.048/100
+    xm_per_pix = 3.7/378
 
     left_fit_x = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fit_x = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
 
-    left_fit = np.polyfit(ploty*ym_per_pix, left_fit_x*xm_per_pix, 2)
-    right_fit = np.polyfit(ploty*ym_per_pix, right_fit_x*xm_per_pix, 2)
+    left_fit_m = np.polyfit(ploty*ym_per_pix, left_fit_x*xm_per_pix, 2)
+    right_fit_m = np.polyfit(ploty*ym_per_pix, right_fit_x*xm_per_pix, 2)
     y_eval = np.max(ploty)
 
-    left_curvature = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5)/(2*np.absolute(left_fit[0]))
-    right_curvature = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5)/(2*np.absolute(right_fit[0]))
+    left_curvature = ((1 + (2*left_fit_m[0]*y_eval*ym_per_pix + left_fit_m[1])**2)**1.5)/(2*np.absolute(left_fit_m[0]))
+    right_curvature = ((1 + (2*right_fit_m[0]*y_eval*ym_per_pix + right_fit_m[1])**2)**1.5)/(2*np.absolute(right_fit_m[0]))
 
     left_pos = left_fit[0]*y_eval**2 + left_fit[1]*y_eval + left_fit[2]
     right_pos = right_fit[0]*y_eval**2 + right_fit[1]*y_eval + right_fit[2]
@@ -350,7 +350,7 @@ def _measure_curvature(left_fit, right_fit, ploty, car_pos):
     return left_curvature, right_curvature, distance_from_center
 
 
-def _draw(image, undistort, warped, left_fit_x, right_fit_x, ploty, Minv):
+def _draw(image, undistort, warped, left_fit_x, right_fit_x, ploty, Minv, curvature, distance_from_center):
 	# Create an image to draw the lines on
 	warp_zero = np.zeros_like(warped).astype(np.uint8)
 	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
@@ -362,6 +362,17 @@ def _draw(image, undistort, warped, left_fit_x, right_fit_x, ploty, Minv):
 
 	# Draw the lane onto the warped blank image
 	cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+
+	# Draw curvature and distance from center
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	text = 'Curvature: ' + '{:04.2f}'.format(curvature) + 'm'
+	cv2.putText(undistort, text, (40,70), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
+
+	direction = 'left'
+	if distance_from_center > 0:
+		direction = 'right'
+	text = '{:04.3f}'.format(np.absolute(distance_from_center)) + 'm ' + direction + ' of center'
+	cv2.putText(undistort, text, (40,120), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, Minv, (image.shape[1], image.shape[0])) 
@@ -461,7 +472,7 @@ def process_image(img):
 
 	left_fit_x = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
 	right_fit_x = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-	final_img = _draw(img, undistort, warped_img, left_fit_x, right_fit_x, ploty, Minv)
+	final_img = _draw(img, undistort, warped_img, left_fit_x, right_fit_x, ploty, Minv, (left_curvature + right_curvature)/2.0, distance_from_center)
 	_show_img(final_img)
 	return final_img
 
@@ -480,5 +491,5 @@ def video():
 	white_clip.write_videofile(white_output, audio=False)
 
 if __name__ == '__main__':
-	run()
-	# video()
+	# run()
+	video()

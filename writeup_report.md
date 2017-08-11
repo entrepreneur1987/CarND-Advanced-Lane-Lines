@@ -115,4 +115,4 @@ Here's a [link to my video result](./project_video_output.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Sometimes the lanes detected don't make sense. When sanity check fails, the pipeline will ignore current frame and use lanes detected from last successful frame.
+Sometimes the lanes detected don't make sense. When sanity check fails, the pipeline will ignore current frame and use lanes detected from last successful frame. The pipeline sometimes fails when the dotted line is not clear, for example, limited dotted parts, one solution is pick a picture which  has limited dotted parts, tune the color and gradient thresholds to make sure lanes in this kind of frames can be correctly detected.
