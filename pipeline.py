@@ -330,8 +330,8 @@ def _find_lanes_derive(warped_img, left_fit, right_fit, ploty):
 
 def _measure_curvature(left_fit, right_fit, ploty, car_pos):
 	# meters per pixel
-    ym_per_pix = 3.048/100
-    xm_per_pix = 3.7/378
+    ym_per_pix = 30/720
+    xm_per_pix = 3.7/700
 
     left_fit_x = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fit_x = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
@@ -456,9 +456,7 @@ def process_image(img):
 		left_fit, right_fit = _find_lanes(warped_img, ploty)
 		print("Calculate")
 	left_curvature, right_curvature, distance_from_center = _measure_curvature(left_fit, right_fit, ploty, undistort.shape[1]/2)
-	print(left_curvature)
-	print(right_curvature)
-	print(distance_from_center)
+
 	# if sanity check passed, update left and right lines
 	if Line.sanity_check(left_fit, right_fit, ploty, left_curvature, right_curvature):
 		left_line.update(detected=True, fit=left_fit, curvature=left_curvature)
@@ -470,11 +468,13 @@ def process_image(img):
 		left_line.update(detected=False, fit=left_fit, curvature=left_curvature)
 		right_line.update(detected=False, fit=right_fit, curvature=right_curvature)
 
-	left_fit_x = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-	right_fit_x = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-	final_img = _draw(img, undistort, warped_img, left_fit_x, right_fit_x, ploty, Minv, (left_curvature + right_curvature)/2.0, distance_from_center)
-	_show_img(final_img)
-	return final_img
+	if left_fit is not None and right_fit is not None:
+		left_fit_x = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+		right_fit_x = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+		final_img = _draw(img, undistort, warped_img, left_fit_x, right_fit_x, ploty, Minv, (left_curvature + right_curvature)/2.0, distance_from_center)
+		_show_img(final_img)
+		return final_img
+	return undistort
 
 def run():
 	#calibrate_camera()
